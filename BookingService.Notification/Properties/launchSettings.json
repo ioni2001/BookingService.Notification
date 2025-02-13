@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "BookingService.Notification": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:50213;http://localhost:50214"
+    }
+  }
+}

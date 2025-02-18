@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: bookingnotification-depl
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: bookingnotification
+    template:
+        metadata:
+            labels:
+                app: bookingnotification
+        spec:
+            containers:
+                - name: bookingnotification
+                  image: ionipatro/bookingnotification:latest
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: bookingnotification-clusterip-srv
+spec:
+    type: ClusterIP
+    selector:
+        app: bookingnotification
+    ports:
+        - name: bookingnotification
+          protocol: TCP
+          port: 80
+          targetPort: 80

@@ -51,11 +51,11 @@ public class EventProcessor : IEventProcessor
     {
         using (var scope = _scopeFactory.CreateScope())
         {
-            var platformPublishedDto = JsonSerializer.Deserialize<BookingCreatedMessage>(bookingCreatedMessage);
+            var bookingCreated = JsonSerializer.Deserialize<BookingCreatedMessage>(bookingCreatedMessage);
 
             try
             {
-                await _hubContext.Clients.All.SendAsync("BookingCreated", bookingCreatedMessage);
+                await _hubContext.Clients.All.SendAsync("BookingCreated", bookingCreated);
             }
             catch (Exception ex)
             {

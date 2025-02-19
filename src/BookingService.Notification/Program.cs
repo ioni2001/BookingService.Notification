@@ -22,6 +22,18 @@ public class Program
             {
                 webBuilder.ConfigureServices((hbc, services) =>
                 {
+                    services.AddCors(options =>
+                    {
+                        options.AddDefaultPolicy(builder =>
+                        {
+                            builder
+                                .SetIsOriginAllowed(origin => true)
+                                .AllowAnyMethod()
+                                .AllowAnyHeader()
+                                .AllowCredentials();
+                        });
+                    });
+
                     // Add SignalR
                     services.AddSignalR();
 
@@ -34,6 +46,8 @@ public class Program
                 {
                     // Configure the middleware pipeline
                     var env = context.HostingEnvironment;
+
+                    app.UseCors();
 
                     app.UseRouting();
 

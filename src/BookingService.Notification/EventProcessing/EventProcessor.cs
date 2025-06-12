@@ -9,24 +9,58 @@ public class EventProcessor : IEventProcessor
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IHubContext<NotificationHub> _hubContext;
+    private readonly ILogger<EventProcessor> _logger;
 
-    public EventProcessor(IServiceScopeFactory scopeFactory, IHubContext<NotificationHub> hubContext)
+    public EventProcessor(IServiceScopeFactory scopeFactory, IHubContext<NotificationHub> hubContext, ILogger<EventProcessor> logger)
     {
         _scopeFactory = scopeFactory;
         _hubContext = hubContext;
+        _logger = logger;
     }
 
     public async Task ProcessEventAsync(string message)
     {
-        var eventType = DetermineEvent(message);
-
-        switch (eventType)
+        try
         {
-            case EventType.BookingCreated:
-                await SendBookingCreatedNotificationSignal(message);
-                break;
-            default:
-                break;
+            var eventType = DetermineEvent(message);
+            switch (eventType)
+            {
+                case EventType.BookingCreated:
+                    await SendBookingCreatedNotificationSignal(message);
+                    break;
+                case EventType.Undetermined:
+                default:
+                    await SendErrorNotificationAsync(message, "Undetermined event type");
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error processing event: {Message}", message);
+            await SendErrorNotificationAsync(message, ex.Message);
+        }
+    }
+
+    private async Task SendErrorNotificationAsync(string originalMessage, string errorDetail)
+    {
+        _logger.LogWarning("Sending error notification for message. Reason: {ErrorDetail}", errorDetail);
+
+        using var scope = _scopeFactory.CreateScope();
+
+        var errorPayload = new
+        {
+            OriginalMessage = originalMessage,
+            ErrorDetail = errorDetail,
+            Timestamp = DateTime.UtcNow
+        };
+
+        try
+        {
+            await _hubContext.Clients.All.SendAsync("ErrorOccurred", errorPayload);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send error notification signal");
         }
     }
 

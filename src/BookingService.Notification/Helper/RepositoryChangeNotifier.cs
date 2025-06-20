@@ -8,12 +8,12 @@ namespace BookingService.Notification.Helper
     public class RepositoryChangeNotifier
     {
         private readonly IServiceScopeFactory _scopeFactory;
-        private readonly IHubContext<NotificationHub, INotificationClient> _hubContext;
+        private readonly IHubContext<NotificationHub> _hubContext;
         private readonly ILogger<RepositoryChangeNotifier> _logger;
 
         public RepositoryChangeNotifier(
             IServiceScopeFactory scopeFactory,
-            IHubContext<NotificationHub, INotificationClient> hubContext,
+            IHubContext<NotificationHub> hubContext,
             ILogger<RepositoryChangeNotifier> logger)
         {
             _scopeFactory = scopeFactory;
@@ -47,7 +47,7 @@ namespace BookingService.Notification.Helper
         {
             try
             {
-                await _hubContext.Clients.All.ReceiveNotificationAsync(method, payload);
+                await _hubContext.Clients.All.SendAsync(method, payload);
             }
             catch (Exception ex)
             {
